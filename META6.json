@@ -1,0 +1,26 @@
+{
+  "auth": "zef:dwarring",
+  "authors": [
+    "David Warring"
+  ],
+  "build-depends": [
+  ],
+  "depends": [
+  ],
+  "description": "Simple example Rubyish language implementation",
+  "license": "Artistic-2.0",
+    "name": "Rubyish",
+  "raku": "6.d",
+  "provides": {
+      "Rubyish::Grammar": "lib/Rubyish/Grammar.rakumod",
+      "Rubyish::Actions": "lib/Rubyish/Actions.rakumod"
+  },
+  "resources": [
+  ],
+  "source-url": "git@github.com:rubyish-raku/Rubyish.git",
+  "tags": [
+  ],
+  "test-depends": [
+  ],
+  "version": "0.0.1"
+}
