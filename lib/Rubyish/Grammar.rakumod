@@ -9,8 +9,14 @@ token term:sym<value> { <value> }
 token term:sym<circumfix> {:s <circumfix> }
 
 proto token value { * }
-token value:sym<uint> { <uint> }
-token uint { \d+ }
+token value:sym<num> { <num=.uint> | <num=.hexint> }
+token uint { ['0' $<base>=<[bod]> '_'?]? [\d+] +% '_' }
+token hexint {
+    '0x' '_'? [
+        [ \d | <[ a..f A..F ａ..ｆ Ａ..Ｆ ]> ]+
+    ]+ % '_'
+}
+
 token value:sym<nil>     { <sym> }
 token value:sym<true>    { <sym> }
 token value:sym<false>   { <sym> }
@@ -39,7 +45,7 @@ token keyword {
 }
 
 ## Operator precedence levels
-#  -- see https://www.tutorialspoint.com/ruby/ruby_operators.htmw
+#  -- see https://www.tutorialspoint.com/ruby/ruby_operators.htm
 
 my $slack = 0;
 my %methodop       = :$slack, :assoc<unary>; # method call

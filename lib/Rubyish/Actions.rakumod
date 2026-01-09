@@ -4,6 +4,7 @@ use experimental :rakuast;
 
 use HLL::Expression::Grammar::Actions;
 also does HLL::Expression::Grammar::Actions;
+use Method::Also;
 
 method TOP($/) { make $<stmt>.ast }
 
@@ -20,8 +21,8 @@ method term:sym<value>($/) {
     make $<value>.ast;
 }
 
-method value:sym<uint>($/) { make $<uint>.ast }
-method uint($/) { make RakuAST::IntLiteral.new($/.Int) }
+method value:sym<num>($/) { make $<num>.ast }
+method uint($/) is also<hexint> { make RakuAST::IntLiteral.new($/.Int) }
 method value:sym<nil>($) {
     make RakuAST::Type::Simple.new(
         RakuAST::Name.from-identifier("Nil")

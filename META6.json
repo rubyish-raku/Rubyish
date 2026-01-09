@@ -6,6 +6,7 @@
   "build-depends": [
   ],
   "depends": [
+      "Method::Also"
   ],
   "description": "Simple example Rubyish language implementation",
   "license": "Artistic-2.0",
