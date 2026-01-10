@@ -9,13 +9,21 @@ token term:sym<value> { <value> }
 token term:sym<circumfix> {:s <circumfix> }
 
 proto token value { * }
-token value:sym<num> { <num=.uint> | <num=.hexint> }
-token uint { ['0' $<base>=<[bod]> '_'?]? [\d+] +% '_' }
-token hexint {
+token value:sym<num> { <num=.unsigned-int> | <num=.hex-int> | <num=.decimal-num> }
+token unsigned-int { ['0' <[bod]> '_'?]? <.decint> }
+token decint { [\d+] +% '_' }
+token hex-int {
     '0x' '_'? [
         [ \d | <[ a..f A..F ａ..ｆ Ａ..Ｆ ]> ]+
     ]+ % '_'
 }
+
+token decimal-num {
+    [ <int=.decint> '.' <frac=.decint> ] <.escale>?
+  | [ <int=.decint> ] <.escale>
+    }
+
+token escale { <[Ee]> <[+-]>? <.decint> }
 
 token value:sym<nil>     { <sym> }
 token value:sym<true>    { <sym> }

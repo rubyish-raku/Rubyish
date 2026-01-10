@@ -14,15 +14,22 @@ method !compile-expr($/) {
 }
 
 method stmt:sym<EXPR>($/) {
-    make self!compile-expr($/); 
+    my $expression = self!compile-expr($/);
+    make RakuAST::Statement::Expression.new: :$expression;
 }
 
 method term:sym<value>($/) {
     make $<value>.ast;
 }
 
+multi sub literal(Int:D $v) { RakuAST::IntLiteral.new($v) }
+multi sub literal(Rat:D $v) { RakuAST::RatLiteral.new($v) }
+multi sub literal(Num:D $v) { RakuAST::NumLiteral.new($v) }
+
 method value:sym<num>($/) { make $<num>.ast }
-method uint($/) is also<hexint> { make RakuAST::IntLiteral.new($/.Int) }
+method unsigned-int($/) { make $/.Int.&literal }
+method hex-int($/) { make $/.Int.&literal }
+method decimal-num($/) { make $/.Numeric.&literal }
 method value:sym<nil>($) {
     make RakuAST::Type::Simple.new(
         RakuAST::Name.from-identifier("Nil")
@@ -63,4 +70,4 @@ multi sub compile-expr(% (:postfix($op)!, :operand($node)!)) {
     )
 }
 
-multi sub compile-expr($leaf-node) { $leaf-node } 
+multi sub compile-expr($leaf-node) { $leaf-node }
