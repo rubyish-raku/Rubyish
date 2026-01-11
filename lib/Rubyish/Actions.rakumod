@@ -30,15 +30,15 @@ method value:sym<num>($/) { make $<num>.ast }
 method unsigned-int($/) { make $/.Int.&literal }
 method hex-int($/) { make $/.Int.&literal }
 method decimal-num($/) { make $/.Numeric.&literal }
-method value:sym<nil>($) {
+method value:sym<nil>($/) {
     make RakuAST::Type::Simple.new(
         RakuAST::Name.from-identifier("Nil")
     )
 }
-method value:sym<true>($) {
+method value:sym<true>($/) {
     make RakuAST::Term::Enum.from-identifier('True');
 }
-method value:sym<false>($) {
+method value:sym<false>($/) {
     make RakuAST::Term::Enum.from-identifier('False');
 }
 
