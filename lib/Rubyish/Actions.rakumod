@@ -30,12 +30,13 @@ method modifier($/) {
 
 multi method stmtish($/ where $<modifier>) {
     my $expression = $<stmt>.ast;
-    my :($modifier-arg, $modifier-class) := $<modifier>.ast;
     my $mod-expr = self!compile-expr($/);
-    make RakuAST::Statement::Expression.new(
-        :$expression,
-        |($modifier-arg => $modifier-class.new($mod-expr))
-    );
+    given $<modifier>.ast {
+        make RakuAST::Statement::Expression.new(
+            :$expression,
+            |(.key => .value.new($mod-expr))
+        );
+    }
 }
 
 multi method stmtish($/) {
