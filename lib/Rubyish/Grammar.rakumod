@@ -5,12 +5,39 @@ also does HLL::Expression::Grammar;
 
 ##use Rubyish::HLL::Block;
 
+token TOP {
+    :my $*IN_TEMPLATE = False;           # true, if in a template
+    :my $*IN_PARENS   = False;           # true, if in a parenthesised list
+    ^ ~ $ <stmtlist>
+        || <.panic('Syntax error')>
+}
+
+# Comments and whitespace
+proto token comment {*}
+token comment:sym<line>   { '#' [<?{!$*IN_TEMPLATE}> \N* || [<!before <tmpl-unesc>>\N]*] }
+token comment:sym<podish> {[^^'=begin'\n] [ .*? [^^'=end'[\n|$]] || <.panic('missing ^^=end at eof')>] }
+
+token ws { <!ww> [\h | <.continuation> | <.comment> | <?{$*IN_PARENS}> \n ]* }
+
+rule separator       { ';' | \n <!after continuation> }
+token continuation   { \\ \n }
+
+rule stmtlist {
+    [ <stmt=.stmtish>? ] *%% <.separator>
+}
+
+#| a single statement, plus optional modifier
+token stmtish {:s
+    <stmt> [ <modifier> <EXPR>]?
+}
+token modifier {if|unless|while|until}
+
 token term:sym<value> { <value> }
 token term:sym<circumfix> {:s <circumfix> }
 
 proto token value { * }
 token value:sym<num> { <num=.unsigned-int> | <num=.hex-int> | <num=.decimal-num> }
-token unsigned-int { ['0' <[bod]> '_'?]? <.decint> }
+token unsigned-int { ['0' <[obd]> '_'?]? <.decint> }
 token decint { [\d+] +% '_' }
 token hex-int {
     '0x' '_'? [
@@ -28,12 +55,6 @@ token escale { <[Ee]> <[+-]>? <.decint> }
 token value:sym<nil>     { <sym> }
 token value:sym<true>    { <sym> }
 token value:sym<false>   { <sym> }
-
-token TOP {
-    ##    ^ ~ $ <stmtlist> ## todo
-    
-    <stmt> || <.panic('Syntax error')>
-}
 
 proto token stmt { <...> }
 

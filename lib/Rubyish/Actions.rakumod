@@ -6,16 +6,47 @@ use HLL::Expression::Grammar::Actions;
 also does HLL::Expression::Grammar::Actions;
 use Method::Also;
 
-method TOP($/) { make $<stmt>.ast }
+method TOP($/) { make $<stmtlist>.ast }
 
 method !compile-expr($/) {
     my $expr-ast := $<EXPR>.ast.head;
     $expr-ast.&compile-expr;
 }
 
+method stmtlist($/) {
+    my RakuAST::Statement::Expression:D @stmts = @<stmt>>>.ast;
+    make RakuAST::StatementList.new: |@stmts;
+}
+
+method modifier($/) {
+    my constant %Modifier = %(
+        :if(condition-modifier => RakuAST::StatementModifier::If),
+        :unless(condition-modifier => RakuAST::StatementModifier::Unless),
+        :while(loop-modifier => RakuAST::StatementModifier::While),
+        :until(loop-modifier => RakuAST::StatementModifier::Until),
+    );
+    make %Modifier{$/};
+}
+
+multi method stmtish($/ where $<modifier>) {
+    my $expression = $<stmt>.ast;
+    my :($modifier-arg, $modifier-class) := $<modifier>.ast;
+    my $mod-expr = self!compile-expr($/);
+    make RakuAST::Statement::Expression.new(
+        :$expression,
+        |($modifier-arg => $modifier-class.new($mod-expr))
+    );
+}
+
+multi method stmtish($/) {
+    my $expression = $<stmt>.ast;
+    make RakuAST::Statement::Expression.new(
+        :$expression,
+    );
+}
+
 method stmt:sym<EXPR>($/) {
-    my $expression = self!compile-expr($/);
-    make RakuAST::Statement::Expression.new: :$expression;
+    make self!compile-expr($/);
 }
 
 method term:sym<value>($/) {
@@ -71,3 +102,10 @@ multi sub compile-expr(% (:postfix($op)!, :operand($node)!)) {
 }
 
 multi sub compile-expr($leaf-node) { $leaf-node }
+
+method ws($/) is also<decint> {}
+
+method FALLBACK($method, $/) {
+    fail "Missing $method actions method"
+        unless $method.contains('fix');
+}
