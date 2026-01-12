@@ -3,6 +3,9 @@ unit grammar Rubyish::Grammar;
 use HLL::Expression::Grammar;
 also does HLL::Expression::Grammar;
 
+use       Rubyish::Proto::value;
+also does Rubyish::Proto::value::Grammar;
+
 ##use Rubyish::HLL::Block;
 
 token TOP {
@@ -34,27 +37,6 @@ token modifier {if|unless|while|until}
 
 token term:sym<value> { <value> }
 token term:sym<circumfix> {:s <circumfix> }
-
-proto token value { * }
-token value:sym<num> { <num=.unsigned-int> | <num=.hex-int> | <num=.decimal-num> }
-token unsigned-int { ['0' <[obd]> '_'?]? <.decint> }
-token decint { [\d+] +% '_' }
-token hex-int {
-    '0x' '_'? [
-        [ \d | <[ a..f A..F ａ..ｆ Ａ..Ｆ ]> ]+
-    ]+ % '_'
-}
-
-token decimal-num {
-    [ <int=.decint> '.' <frac=.decint> ] <.escale>?
-  | [ <int=.decint> ] <.escale>
-    }
-
-token escale { <[Ee]> <[+-]>? <.decint> }
-
-token value:sym<nil>     { <sym> }
-token value:sym<true>    { <sym> }
-token value:sym<false>   { <sym> }
 
 proto token stmt { <...> }
 

@@ -14,7 +14,9 @@
   "raku": "6.d",
   "provides": {
       "Rubyish::Grammar": "lib/Rubyish/Grammar.rakumod",
-      "Rubyish::Actions": "lib/Rubyish/Actions.rakumod"
+      "Rubyish::Actions": "lib/Rubyish/Actions.rakumod",
+      "Rubyish::Proto::value": "lib/Rubyish/Proto/value.rakumod",
+      "Rubyish::Util": "lib/Rubyish/Util.rakumod"
   },
   "resources": [
   ],
