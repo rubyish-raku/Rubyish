@@ -21,6 +21,9 @@ role Grammar {
     token value:sym<nil>     { <sym> }
     token value:sym<true>    { <sym> }
     token value:sym<false>   { <sym> }
+    token value:sym<string>  { <string> }
+    proto token string {*}
+    token string:sym<'> {:s<hs> <sym> ~ <sym> ['\\'$<s>=<['\\]> || $<s>=<-[\\'\n]>+]+}
 }
 
 role Actions {
@@ -28,6 +31,7 @@ role Actions {
     multi sub literal(Int:D $v) { RakuAST::IntLiteral.new($v) }
     multi sub literal(Rat:D $v) { RakuAST::RatLiteral.new($v) }
     multi sub literal(Num:D $v) { RakuAST::NumLiteral.new($v) }
+    multi sub literal(Str:D $v) { RakuAST::StrLiteral.new($v) }
 
     method value:sym<num>($/) { make $<num>.ast }
     method unsigned-int($/) { make $/.Int.&literal }
@@ -43,6 +47,11 @@ role Actions {
     }
     method value:sym<false>($/) {
         make RakuAST::Term::Enum.from-identifier('False');
+    }
+    method value:sym<string>($/) { make $<string>.ast }
+    method string:sym<'>($/) {
+        my Str:D $value = @<s>.join;
+        make $value.&literal;
     }
 
 }

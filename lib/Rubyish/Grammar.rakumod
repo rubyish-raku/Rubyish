@@ -21,6 +21,7 @@ token comment:sym<line>   { '#' [<?{!$*IN_TEMPLATE}> \N* || [<!before <tmpl-unes
 token comment:sym<podish> {[^^'=begin'\n] [ .*? [^^'=end'[\n|$]] || <.panic('missing ^^=end at eof')>] }
 
 token ws { <!ww> [\h | <.continuation> | <.comment> | <?{$*IN_PARENS}> \n ]* }
+token hs { <!ww> [\h | <.continuation> ]* }
 
 rule separator       { ';' | \n <!after continuation> }
 token continuation   { \\ \n }

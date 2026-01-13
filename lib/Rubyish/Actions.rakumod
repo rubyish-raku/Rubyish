@@ -66,7 +66,7 @@ multi sub compile($/ where $<stmtlist>) {
     $<stmtlist>.ast;
 }
 
-method ws($/) is also<decint escale separator> {}
+method ws($/) is also<hs decint escale separator> {}
 
 method FALLBACK($method, $/) {
     die "Missing $method actions method"

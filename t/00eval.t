@@ -5,21 +5,30 @@ use experimental :rakuast;
 use Rubyish::Grammar;
 use Rubyish::Actions;
 
- subtest "eval sanity", {
+sub test-eval(Str:D $expr, Any $expected-result) {
+    my Rubyish::Actions $actions .= new;
+    subtest $expr, {
+        ok Rubyish::Grammar.parse($expr, :$actions), "parse";
+        my RakuAST::StatementList $stmts = $/.ast;
+        note $stmts;
+        is-deeply $stmts.EVAL, $expected-result, "statement eval";
+    }
+}
+
+subtest "numeric expressions", {
      for "4" => 4, "4+-3" => 1, "4+2+36" => 42, "0b111" => 7, "0xA" => 10,
      "-42" => -42, "2++40" => 42, "(2+3)" => 5, "2+3*5" => 17, "(2+3)*5" => 25,
      "8/2" => 4.0, "((4*3)-(3*2))" => 6, "1_234" => 1234, "4.2" => 4.2,
      "4.2+1" => 5.2, "1.23e-7" => 1.23e-7, "3 > 2" => True, "2 > 3" => False,
      "true" => True, "false" => False, "nil" => Nil, "1;2" => 2, "2 if true" => 2, "1 if false" => Empty {
-         my $expr = .key;
-         my $expected-result := .value;
-         my Rubyish::Actions $actions .= new;
-         subtest $expr, {
-             ok Rubyish::Grammar.parse($expr, :$actions), "parse";
-             my RakuAST::StatementList $stmts = $/.ast;
-             is-deeply $stmts.EVAL, $expected-result, "calculation";
-         }
+         .key.&test-eval: .value;
     }
+}
+
+ subtest "quoted strings", {
+     for "'foo'" => 'foo', "'foo\\'bar'" => "foo'bar", "'foo\\\\bar'" => "foo\\bar" {
+         .key.&test-eval: .value;
+     }
 }
 
 done-testing();
