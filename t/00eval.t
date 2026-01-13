@@ -10,7 +10,6 @@ sub test-eval(Str:D $expr, Any $expected-result) {
     subtest $expr, {
         ok Rubyish::Grammar.parse($expr, :$actions), "parse";
         my RakuAST::StatementList $stmts = $/.ast;
-        note $stmts;
         is-deeply $stmts.EVAL, $expected-result, "statement eval";
     }
 }
@@ -26,7 +25,8 @@ subtest "numeric expressions", {
 }
 
  subtest "quoted strings", {
-     for "'foo'" => 'foo', "'foo\\'bar'" => "foo'bar", "'foo\\\\bar'" => "foo\\bar" {
+     for "'foo'" => 'foo', "'foo\\'bar'" => "foo'bar", "'foo\\\\bar'" => "foo\\bar",
+     q<"foobar"> => 'foobar', q<"#{42}"> => '42', q<"foo#{42}bar"> => 'foo42bar' {
          .key.&test-eval: .value;
      }
 }
