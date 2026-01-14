@@ -3,8 +3,8 @@ unit grammar Rubyish::Grammar;
 use HLL::Expression::Grammar;
 also does HLL::Expression::Grammar;
 
-use       Rubyish::Proto::value;
-also does Rubyish::Proto::value::Grammar;
+use       Rubyish::Value;
+also does Rubyish::Value::Grammar;
 
 ##use Rubyish::HLL::Block;
 

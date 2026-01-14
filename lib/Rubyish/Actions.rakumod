@@ -5,8 +5,8 @@ use experimental :rakuast;
 use HLL::Expression::Grammar::Actions;
 also does HLL::Expression::Grammar::Actions;
 
-use       Rubyish::Proto::value;
-also does Rubyish::Proto::value::Actions;
+use       Rubyish::Value;
+also does Rubyish::Value::Actions;
 
 use Rubyish::Util :&compile-expr;
 use Method::Also;
@@ -66,7 +66,7 @@ multi sub compile($/ where $<stmtlist>) {
     $<stmtlist>.ast;
 }
 
-method ws($/) is also<hs decint escale separator> {}
+method ws($/) is also<hs decint escale separator hexdigits xdigit before> {}
 
 method FALLBACK($method, $/) {
     die "Missing $method actions method"

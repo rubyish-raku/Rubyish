@@ -1,4 +1,4 @@
-unit module Rubyish::Proto::value;
+unit module Rubyish::Value;
 
 role Grammar {
     proto token value { * }
@@ -6,11 +6,11 @@ role Grammar {
     token unsigned-int { ['0' <[obd]> '_'?]? <.decint> }
     token decint { [\d+] +% '_' }
     token hex-int {
-        '0x' '_'? [
-            [ \d | <[ a..f A..F ａ..ｆ Ａ..Ｆ ]> ]+
-        ]+ % '_'
+        '0x' '_'? <.hexdigits>
     }
-
+    token hexdigits {
+        [ \d | <[ a..f A..F ａ..ｆ Ａ..Ｆ ]> ]+ % '_'
+    }
     token decimal-num {
         [ <int=.decint> '.' <frac=.decint> ] <.escale>?
         | [ <int=.decint> ] <.escale>
@@ -22,9 +22,24 @@ role Grammar {
     token value:sym<true>    { <sym> }
     token value:sym<false>   { <sym> }
     token value:sym<string>  { <string> }
+
     proto token string {*}
     token string:sym<'> {<sym> ~ <sym> ['\\'$<lit>=<['\\]>||$<lit>=<-[\\'\n]>+]+}
-    token string:sym<"> {<sym> ~ <sym> ['#{' ~ '}' <stmtlist>||$<lit>=<-[\\"\n]>]+}
+
+    token string:sym<"> {<sym> ~ <sym> <segment>*}
+    proto token segment {*}
+    token segment:sym<expr> { '#{' ~ '}' <stmtlist> }
+    token segment:sym<esc>  { '\\' [<escape>||.] }
+    token segment:sym<reg>  {[<!before ['#{' | '"' | \n | '\\']>.]+}
+
+    proto token escape {*}
+    token escape:sym<backslash> { '\\' }
+    token escape:sym<char>      { <[abtnvfres]> }
+    token escape:sym<continue>  { \n }
+    token escape:sym<octal>     { <[0..7]>**1..3 }
+    token escape:sym<control>   { <[Cc]>$<chr>=<[a..z A..Z]> }
+    token escape:sym<hex>       { <[xX]>$<num>=[<xdigit>**4] }
+    token escape:sym<unicode>   { <[uU]>$<num>=[<xdigit>**1..6] }
 }
 
 role Actions {
@@ -56,20 +71,31 @@ role Actions {
         make @<lit>.join.&literal;
     }
     method string:sym<">(Capture $/) {
-        my @segments = $/.caps.map: {
-            my $tk = .value;
-            given .key {
-                when 'stmtlist' {
-                    $tk.ast.&blockoid.&block;
-                }
-                when 'lit' {
-                    $tk.Str.&literal;
-                }
-                default {
-                    Empty;
-                }
-            }
-        }
+        my @segments = @<segment>>>.ast;
         make RakuAST::QuotedString.new: :@segments;
     }
+    method segment:sym<expr>($/) { make $<stmtlist>.ast.&blockoid.&block }
+    method segment:sym<esc>($/)  { make literal($<escape> ?? $<escape>.ast !! $/.Str) }
+    method segment:sym<reg>($/)  { make $/.Str.&literal }
+
+    method escape:sym<backslash>($/) { make '\\' }
+    method escape:sym<char>($/) {
+        my constant %ESC = %(
+            'a' => "\a",
+            'b' => "\b",
+            't' => "\t",
+            'n' => "\n",
+            'v' => 0xB.chr,
+            'f' => "\f",
+            'r' => "\r",
+            'e' => "\e",
+            's' => " ",
+        );
+        make %ESC{$/.Str};
+    }
+    method escape:sym<octal>($/) { make chr(:8($/.Str)) }
+    method escape:sym<hex>($/) { make chr(:16($<num>.Str)) }
+    method escape:sym<unicode>($/) { make chr(:16($<num>.Str)) }
+    method escape:sym<continue>($/)  { make '' }
+    method escape:sym<control>($/)  { make ($<chr>.lc.ord - 'a'.ord).chr }
 }

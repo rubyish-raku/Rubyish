@@ -26,7 +26,11 @@ subtest "numeric expressions", {
 
  subtest "quoted strings", {
      for "'foo'" => 'foo', "'foo\\'bar'" => "foo'bar", "'foo\\\\bar'" => "foo\\bar",
-     q<"foobar"> => 'foobar', q<"#{42}"> => '42', q<"foo#{42}bar"> => 'foo42bar' {
+     q<"foobar"> => 'foobar', q<"#{42}"> => '42', q<"foo#{40+2}bar"> => 'foo42bar',
+     q<"foo#{42 if true}bar"> => 'foo42bar', q<"foo#{42 if false}bar"> => 'foobar',
+     ## q<"foo\\\nbar> => "foobar", ## todo
+     q<"\\a\\b\\t\\n\\v\\f\\r\\e\\s"> => "\a\b\t\n\x[b]\f\r\e ", q<"\77"> => "?", q<"\cM"> => "\f",
+     q<"\\x006E"> => "n", q<"\\u6e"> => "n" {
          .key.&test-eval: .value;
      }
 }
