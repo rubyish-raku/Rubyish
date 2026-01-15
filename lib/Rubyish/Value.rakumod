@@ -33,9 +33,7 @@ role Grammar {
     token segment:sym<reg>  {[<!before ['#{' | '"' | \n | '\\']>.]+}
 
     proto token escape {*}
-    token escape:sym<backslash> { '\\' }
-    token escape:sym<char>      { <[abtnvfres]> }
-    token escape:sym<continue>  { \n }
+    token escape:sym<char>      { <[abtnvfres"\\\n]> }
     token escape:sym<octal>     { <[0..7]>**1..3 }
     token escape:sym<control>   { <[Cc]>$<chr>=<[a..z A..Z]> }
     token escape:sym<hex>       { <[xX]>$<num>=[<xdigit>**4] }
@@ -76,26 +74,27 @@ role Actions {
     }
     method segment:sym<expr>($/) { make $<stmtlist>.ast.&blockoid.&block }
     method segment:sym<esc>($/)  { make literal($<escape> ?? $<escape>.ast !! $/.Str) }
-    method segment:sym<reg>($/)  { make $/.Str.&literal }
+    method segment:sym<reg>($/)  { make literal($/.Str) }
 
-    method escape:sym<backslash>($/) { make '\\' }
     method escape:sym<char>($/) {
         my constant %ESC = %(
-            'a' => "\a",
-            'b' => "\b",
-            't' => "\t",
-            'n' => "\n",
-            'v' => 0xB.chr,
-            'f' => "\f",
-            'r' => "\r",
-            'e' => "\e",
-            's' => " ",
+            'a'  => "\a",
+            'b'  => "\b",
+            't'  => "\t",
+            'n'  => "\n",
+            'v'  => 0xB.chr,
+            'f'  => "\f",
+            'r'  => "\r",
+            'e'  => "\e",
+            's'  => " ",
+            '"'  => '"',
+            '\\' => '\\',
+            "\n" => '', # continuation
         );
         make %ESC{$/.Str};
     }
-    method escape:sym<octal>($/) { make chr(:8($/.Str)) }
-    method escape:sym<hex>($/) { make chr(:16($<num>.Str)) }
-    method escape:sym<unicode>($/) { make chr(:16($<num>.Str)) }
-    method escape:sym<continue>($/)  { make '' }
+    method escape:sym<octal>($/)    { make chr(:8($/.Str)) }
     method escape:sym<control>($/)  { make ($<chr>.lc.ord - 'a'.ord).chr }
+    method escape:sym<hex>($/)      { make chr(:16($<num>.Str)) }
+    method escape:sym<unicode>($/)  { make chr(:16($<num>.Str)) }
 }
