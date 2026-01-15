@@ -94,7 +94,7 @@ role Actions {
         make %ESC{$/.Str};
     }
     method escape:sym<octal>($/)    { make chr(:8($/.Str)) }
-    method escape:sym<control>($/)  { make ($<chr>.lc.ord - 'a'.ord).chr }
+    method escape:sym<control>($/)  { make chr($<chr>.lc.ord - 'a'.ord) }
     method escape:sym<hex>($/)      { make chr(:16($<num>.Str)) }
     method escape:sym<unicode>($/)  { make chr(:16($<num>.Str)) }
 }

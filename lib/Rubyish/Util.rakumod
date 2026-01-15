@@ -29,4 +29,13 @@ multi sub compile-expr(% (:postfix($op)!, :operand($node)!)) {
     )
 }
 
+multi sub compile-expr(% (:ternary($)!, :$cond!, :then($t)!, :else($e)!)) {
+    my $condition = $cond.&compile-expr;
+    my $then = $t.&compile-expr;
+    my $else = $e.&compile-expr;
+    RakuAST::Ternary.new(
+        :$condition, :$then, :$else
+    )
+}
+
 multi sub compile-expr($leaf-node) { $leaf-node }
