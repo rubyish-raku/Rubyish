@@ -26,7 +26,8 @@ subtest "numeric expressions", {
 }
 
 subtest "quoted strings", {
-    for (q<'foo'> => 'foo', q<'foo\\'bar'> => "foo'bar", q<'foo\\\\bar'> => "foo\\bar", q<'foo\\bar'> => "foo\\bar",
+    for (q<'foo'> => 'foo', q<'foo\\'bar'> => "foo'bar", q<'foo\\\\bar'> => "foo\\bar",
+         q<'fo\\o'> => "fo\\o", q<"fo\\o"> => "fo\\o",
          q<"foobar"> => 'foobar', q<"#{42}"> => '42', q<"foo#{40+2}bar"> => 'foo42bar',
          q<"foo#{42 if true}bar"> => 'foo42bar', q<"foo#{42 if false}bar"> => 'foobar',
          q<"foo\\> ~ "\n" ~ q<bar"> => "foobar", ## todo

@@ -24,12 +24,12 @@ role Grammar {
     token value:sym<string>  { <string> }
 
     proto token string {*}
-    token string:sym<'> {<sym> ~ <sym> ['\\'$<lit>=<['\\]> || $<lit>='\\' || $<lit>=<-[\\'\n]>+]+}
+    token string:sym<'> {<sym> ~ <sym> [ $<lit>=<-[\\'\n]>+ | '\\'$<lit>=<['\\]> || $<lit>='\\']+}
 
     token string:sym<"> {<sym> ~ <sym> <segment>*}
     proto token segment {*}
     token segment:sym<expr> { '#{' ~ '}' <stmtlist> }
-    token segment:sym<esc>  { '\\' [<escape>||.] }
+    token segment:sym<esc>  { '\\' <escape>? }
     token segment:sym<reg>  {[<!before ['#{' | '"' | \n | '\\']>.]+}
 
     proto token escape {*}
