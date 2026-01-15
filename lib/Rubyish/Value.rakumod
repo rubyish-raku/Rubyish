@@ -24,7 +24,7 @@ role Grammar {
     token value:sym<string>  { <string> }
 
     proto token string {*}
-    token string:sym<'> {<sym> ~ <sym> ['\\'$<lit>=<['\\]>||$<lit>=<-[\\'\n]>+]+}
+    token string:sym<'> {<sym> ~ <sym> ['\\'$<lit>=<['\\]> || $<lit>='\\' || $<lit>=<-[\\'\n]>+]+}
 
     token string:sym<"> {<sym> ~ <sym> <segment>*}
     proto token segment {*}
