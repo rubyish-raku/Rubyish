@@ -92,7 +92,7 @@ $slack++;
 my %logical-and    = :$slack, :assoc<left>;  # &&
 
 $slack++;
-my %ternary        = :$slack, :assoc<right>;     # ?:
+my %ternary        = :$slack, :assoc<right>;  # ?:
 
 $slack++;
 my %logical-or     = :$slack, :assoc<left>;  # ||
@@ -146,7 +146,7 @@ token infix:sym«cmp»  { <sym>       <O(|%equality)> }
 token infix:sym<&&>   { <sym>       <O(|%logical-and)> }
 token infix:sym<||>   { <sym>       <O(|%logical-or)> }
 
-token infix:sym<?:>   {:s '?' <then=.EXPR> ':' <O(|%ternary, :op<?:>)> }
+token infix:sym<?:>   {:s '?' <mid=.EXPR> ':' <O(|%ternary, :op<?:>)> }
 
 token assign-op       {'='<![>=]>}
 token infix:sym<=>    { <.assign-op> <O(|%assignment)> }

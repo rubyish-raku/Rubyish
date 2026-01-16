@@ -13,6 +13,15 @@ multi sub compile-expr(% (:infix($op)!, :left($lhs)!, :right($rhs)!)) {
     )
 }
 
+multi sub compile-expr(% (:ternary($)!, :$left!, :$mid!, :$right!)) {
+    my $condition = $left.&compile-expr;
+    my $then = $mid.&compile-expr;
+    my $else = $right.&compile-expr;
+    RakuAST::Ternary.new(
+        :$condition, :$then, :$else
+    )
+}
+
 multi sub compile-expr(% (:prefix($op)!, :operand($node)!)) {
     my $operand = $node.&compile-expr;
     my RakuAST::Prefix $prefix .= new($op);
@@ -26,15 +35,6 @@ multi sub compile-expr(% (:postfix($op)!, :operand($node)!)) {
     my RakuAST::Postfix $postfix .= new($op);
     RakuAST::ApplyPostfix.new(
         :$postfix, :$operand,
-    )
-}
-
-multi sub compile-expr(% (:ternary($)!, :$cond!, :then($t)!, :else($e)!)) {
-    my $condition = $cond.&compile-expr;
-    my $then = $t.&compile-expr;
-    my $else = $e.&compile-expr;
-    RakuAST::Ternary.new(
-        :$condition, :$then, :$else
     )
 }
 

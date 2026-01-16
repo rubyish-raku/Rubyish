@@ -40,7 +40,8 @@ subtest "quoted strings", {
 subtest "ternary", {
     for ("true ? 1 : 2" => 1, "false ? 1 : 2" => 2, "true ? 1 : true ? 2 : 3" => 1,
          "true ? 1 : false ? 2 : 3" => 1, "false ? 1 : true ? 2 : 3" => 2,
-         "(true ? 1 : false ) ? 2 : 3" => 2, "false ? 1 : false ? 2 : 3" => 3) {
+         "(true ? 1 : false ) ? 2 : 3" => 2, "false ? 1 : false ? 2 : 3" => 3,
+         "1 + 1 == 2 ? 1+1 : 1-1" => 2,"1 + 1 == 1 ? 1+1 : 1-1" => 0, ) {
                 .key.&test-eval: .value;
     }
 }
