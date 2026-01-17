@@ -4,13 +4,23 @@ use experimental :rakuast;
 
 proto sub compile-expr(|) is export(:compile-expr) {*}
 
-multi sub compile-expr(% (:infix($op)!, :left($lhs)!, :right($rhs)!)) {
+multi sub infix('=', $name, $initializer) {
+    RakuAST::VarDeclaration::Term.new(
+        :$name, :$initializer,
+    );
+}
+
+multi sub infix($op, $lhs, $rhs) {
     my $left = $lhs.&compile-expr;
     my $right = $rhs.&compile-expr;
     my RakuAST::Infix $infix .= new($op);
     RakuAST::ApplyInfix.new(
         :$left, :$infix, :$right
     )
+}
+
+multi sub compile-expr(% (:infix($op)!, :$left!, :$right!)) {
+    $op.&infix: $left, $right;
 }
 
 multi sub compile-expr(% (:ternary($)!, :$left!, :$mid!, :$right!)) {

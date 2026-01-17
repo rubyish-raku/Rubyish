@@ -6,11 +6,13 @@ also does HLL::Expression::Grammar;
 use       Rubyish::Value;
 also does Rubyish::Value::Grammar;
 
-##use Rubyish::HLL::Block;
+use Rubyish::HLL::Block;
 
 token TOP {
     :my $*IN_TEMPLATE = False;           # true, if in a template
     :my $*IN_PARENS   = False;           # true, if in a parenthesised list
+    :my $*CUR-BLOCK = Rubyish::HLL::Block.new;
+    :my %*SYM;                           # symbols in current scope
     ^ ~ $ <stmtlist>
         || <.panic('Syntax error')>
 }
@@ -36,6 +38,21 @@ token stmtish {:s
 }
 token modifier {if|unless|while|until}
 
+sub is-variable($op) {
+    my $type := %*SYM{$op} // %*SYM-GBL{$op};
+
+    $type && ($type eq 'var');
+}
+token var {
+    :my $*MAYBE_DECL := 0;
+    $<var>=<ident>
+    [  <?before <hs> <.assign-op> { $*MAYBE_DECL := 1 }>
+       || <?{ is-variable(~$<var>) }>
+       ||  <.panic("unknown variable or method: $<var>")>
+    ]
+}
+
+token term:sym<var> { <var> }
 token term:sym<value> { <value> }
 token term:sym<circumfix> {:s <circumfix> }
 
@@ -101,13 +118,12 @@ $slack++;
 my %assignment     = :$slack, :assoc<right>; # = %= { /= -= += |= &= >>= <<= *= &&= ||= **=
 
 $slack++;
-my %loose_not      = :$slack, :assoc<unary>; # not (unary)
+my %loose-not      = :$slack, :assoc<unary>; # not (unary)
 
 $slack++;
-my %loose_logical  =  :$slack, :assoc<left>; # or and
+my %loose-logical  =  :$slack, :assoc<left>; # or and
 
 token infix:sym<**>   { <sym>       <O(|%unary)> }
-
 token prefix:sym<->   { <sym><![>]> <O(|%unary)> }
 token prefix:sym<+>   { <sym>       <O(|%unary)> }
 token prefix:sym<!>   { <sym>       <O(|%unary)> }
@@ -146,14 +162,14 @@ token infix:sym«cmp»  { <sym>       <O(|%equality)> }
 token infix:sym<&&>   { <sym>       <O(|%logical-and)> }
 token infix:sym<||>   { <sym>       <O(|%logical-or)> }
 
-token infix:sym<?:>   {:s '?' <mid=.EXPR> ':' <O(|%ternary, :op<?:>)> }
+token infix:sym<?:>   {:s '?' <EXPR> ':' <O(|%ternary, :op<?:>)> }
 
 token assign-op       {'='<![>=]>}
 token infix:sym<=>    { <.assign-op> <O(|%assignment)> }
 
-token prefix:sym<not> { <sym>  <O(|%loose_not)> }
-token infix:sym<and>  { <sym>  <O(|%loose_logical)> }
-token infix:sym<or>   { <sym>  <O(|%loose_logical)> }
+token prefix:sym<not> { <sym>  <O(|%loose-not)> }
+token infix:sym<and>  { <sym>  <O(|%loose-logical)> }
+token infix:sym<or>   { <sym>  <O(|%loose-logical)> }
 
 # Parenthesis
 token circumfix:sym<( )> { :my $*IN-PARENS := True;

@@ -10,6 +10,7 @@ sub test-eval(Str:D $expr, Any $expected-result) {
     subtest $expr, {
         ok Rubyish::Grammar.parse($expr, :$actions), "parse";
         my RakuAST::StatementList $stmts = $/.ast;
+note $stmts;
         is-deeply $stmts.EVAL, $expected-result, "statement eval";
     }
 }
@@ -42,7 +43,13 @@ subtest "ternary", {
          "true ? 1 : false ? 2 : 3" => 1, "false ? 1 : true ? 2 : 3" => 2,
          "(true ? 1 : false ) ? 2 : 3" => 2, "false ? 1 : false ? 2 : 3" => 3,
          "1 + 1 == 2 ? 1+1 : 1-1" => 2,"1 + 1 == 1 ? 1+1 : 1-1" => 0, ) {
-                .key.&test-eval: .value;
+        .key.&test-eval: .value;
+    }
+}
+
+subtest "variables", {
+    for ("x=42" => 42, ) {
+        .key.&test-eval: .value;
     }
 }
 

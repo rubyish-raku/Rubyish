@@ -11,7 +11,9 @@ also does Rubyish::Value::Actions;
 use Rubyish::Util :&compile-expr;
 use Method::Also;
 
-method TOP($/) { make $/.&compile }
+method TOP($/) {
+    make $/.&compile;
+}
 
 method stmtlist($/) {
     my RakuAST::Statement::Expression:D @stmts = @<stmt>>>.ast;
@@ -46,12 +48,29 @@ multi method stmtish($/) {
     );
 }
 
+method var($/) {
+    my $name := ~$<ident>;
+    if $*MAYBE-DECL {
+        my $block = $*CUR-BLOCK;
+        my $sym = $block.symbol($name);
+        unless $sym.declared {
+            %*SYM{$name} = 'var';
+            $sym.declared = True;
+        }
+    }
+    make RakuAST::Name.from-identifier($name)
+}
+
 method stmt:sym<EXPR>($/) {
     make $/.&compile;
 }
 
 method term:sym<value>($/) {
     make $<value>.ast;
+}
+
+method term:sym<var>($/) {
+    make $<var>.ast;
 }
 
 method circumfix:sym<( )>($/) {  make $/.&compile; }
@@ -66,7 +85,7 @@ multi sub compile($/ where $<stmtlist>) {
     $<stmtlist>.ast;
 }
 
-method ws($/) is also<ww hs decint escale separator hexdigits xdigit before> {}
+method ws($/) is also<ww hs decint escale separator hexdigits xdigit before assign-op> {}
 
 method FALLBACK($method, $/) {
     die "Missing $method actions method"
