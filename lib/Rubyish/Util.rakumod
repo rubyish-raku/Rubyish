@@ -4,7 +4,8 @@ use experimental :rakuast;
 
 proto sub compile-expr(|) is export(:compile-expr) {*}
 
-multi sub infix('=', $name, $initializer) {
+multi sub infix('=', $name, $initial-value) {
+    my RakuAST::Initializer::Assign $initializer .= new($initial-value);
     RakuAST::VarDeclaration::Term.new(
         :$name, :$initializer,
     );

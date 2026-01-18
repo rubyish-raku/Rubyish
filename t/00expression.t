@@ -10,7 +10,6 @@ sub test-eval(Str:D $expr, Any $expected-result) {
     subtest $expr, {
         ok Rubyish::Grammar.parse($expr, :$actions), "parse";
         my RakuAST::StatementList $stmts = $/.ast;
-note $stmts;
         is-deeply $stmts.EVAL, $expected-result, "statement eval";
     }
 }
