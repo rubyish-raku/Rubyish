@@ -51,7 +51,12 @@ multi method stmtish($/) {
 method var($/) {
     my $name := ~$<ident>;
     my RakuAST::Name $id .= from-identifier: $name;
-    make %*SYM{$name} ?? RakuAST::Term::Name.new($id) !! $id;
+
+    make do given %*SYM{$name} {
+        when 'var'  { RakuAST::Term::Name.new($id) }
+        when 'func' { RakuAST::Call::Name::WithoutParentheses.new($id) }
+        default     { $id }
+    }
 }
 
 method stmt:sym<EXPR>($/) {

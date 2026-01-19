@@ -41,10 +41,10 @@ token modifier {if|unless|while|until}
 sub is-variable($op) {
     my $type := %*SYM{$op} // %*SYM-GBL{$op};
 
-    $type && ($type eq 'var');
+    $type ~~ 'var';
 }
 token var {
-    $<var>=<ident>
+    $<var>=[<!keyword> <ident> <!before [ \! | \? | <hs>\( ]>]
     [  <?before <hs> <.assign-op> >
        || <?{ is-variable(~$<var>) }>
        ||  <.panic("unknown variable or method: $<var>")>
