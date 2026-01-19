@@ -5,22 +5,30 @@ use experimental :rakuast;
 proto sub compile-expr(|) is export(:compile-expr) {*}
 
 multi sub infix('=', $name, $initial-value) {
+    my $id = $name.DEPARSE;
+    nextsame if %*SYM{$id}:exists;
+
+    my $block = $*CUR-BLOCK;
+    my $sym = $block.symbol($id);
+    %*SYM{$id} = 'var';
+    $sym.declared = True;
     my RakuAST::Initializer::Assign $initializer .= new($initial-value);
+ 
     RakuAST::VarDeclaration::Term.new(
         :$name, :$initializer,
     );
 }
 
-multi sub infix($op, $lhs, $rhs) {
-    my $left = $lhs.&compile-expr;
-    my $right = $rhs.&compile-expr;
+multi sub infix($op, $left, $right) {
     my RakuAST::Infix $infix .= new($op);
     RakuAST::ApplyInfix.new(
         :$left, :$infix, :$right
     )
 }
 
-multi sub compile-expr(% (:infix($op)!, :$left!, :$right!)) {
+multi sub compile-expr(% (:infix($op)!, :$left! is copy, :$right! is copy)) {
+    $left  .= &compile-expr;
+    $right .= &compile-expr;
     $op.&infix: $left, $right;
 }
 

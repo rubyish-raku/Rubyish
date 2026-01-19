@@ -44,9 +44,8 @@ sub is-variable($op) {
     $type && ($type eq 'var');
 }
 token var {
-    :my $*MAYBE-DECL := False;
     $<var>=<ident>
-    [  <?before <hs> <.assign-op> { $*MAYBE-DECL := True }>
+    [  <?before <hs> <.assign-op> >
        || <?{ is-variable(~$<var>) }>
        ||  <.panic("unknown variable or method: $<var>")>
     ]

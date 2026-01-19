@@ -47,7 +47,7 @@ subtest "ternary", {
 }
 
 subtest "variables", {
-    for ("x=42" => 42, ) {
+    for ("x=42" => 42, "x=42;x" => 42, "x=40;x+2" => 42) {
         .key.&test-eval: .value;
     }
 }

@@ -50,15 +50,8 @@ multi method stmtish($/) {
 
 method var($/) {
     my $name := ~$<ident>;
-    if $*MAYBE-DECL {
-        my $block = $*CUR-BLOCK;
-        my $sym = $block.symbol($name);
-        unless $sym.declared {
-            %*SYM{$name} = 'var';
-            $sym.declared = True;
-        }
-    }
-    make RakuAST::Name.from-identifier($name)
+    my RakuAST::Name $id .= from-identifier: $name;
+    make %*SYM{$name} ?? RakuAST::Term::Name.new($id) !! $id;
 }
 
 method stmt:sym<EXPR>($/) {
@@ -70,6 +63,7 @@ method term:sym<value>($/) {
 }
 
 method term:sym<var>($/) {
+    my $var =  $<var>.ast;
     make $<var>.ast;
 }
 
