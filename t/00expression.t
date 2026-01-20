@@ -46,6 +46,30 @@ subtest "ternary", {
     }
 }
 
+subtest "numeric comparison", {
+    my constant f = False;
+    my constant t = True;
+    for (('==', [f,t,f]), ('!=', [t,f,t]), ('>=', [f,t,t]), ('>', [f,f,t]),
+         ('<', [t,f,f]), ('<=', [t,t,f]), ('<=>', [Less,Same,More]))
+    -> @ ($op, @expected) {
+        for ((1,3), (2,2), (3,1)) -> @ ($a,$b) {
+            "$a $op $b".&test-eval: @expected.shift;
+        }
+    }
+}
+
+subtest "string comparison", {
+    my constant f = False;
+    my constant t = True;
+    for (('eq', [f,t,f]), ('ne', [t,f,t]), ('ge', [f,t,t]), ('gt', [f,f,t]),
+         ('lt', [t,f,f]), ('le', [t,t,f]), ('cmp', [Less,Same,More]))
+    -> @ ($op, @expected) {
+        for (('a','c'), ('b','b'), ('c','a')) -> @ ($a,$b) {
+            "'$a' $op '$b'".&test-eval: @expected.shift;
+        }
+    }
+}
+
 subtest "variables", {
     for ("x=42" => 42, "x=42;x" => 42, "x=40;x+2" => 42) {
         .key.&test-eval: .value;

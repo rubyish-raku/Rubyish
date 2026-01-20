@@ -112,10 +112,6 @@ role Grammar {
     # Array and hash indices
     token postcircumfix:sym<[ ]> { '[' ~ ']' [ <EXPR> ] <O(|%methodop)> }
     token postcircumfix:sym<{ }> { '{' ~ '}' [ <EXPR> ] <O(|%methodop)> }
-    token postcircumfix:sym<ang> {
-        <?[<]> <quote_EXPR: ':q'>
-        <O(|%methodop)>
-    }
 }
 
 role Actions {
