@@ -11,7 +11,7 @@ also does Rubyish::Operators::Actions;
 use       Rubyish::Values;
 also does Rubyish::Values::Actions;
 
-use Rubyish::Util :&compile;
+use Rubyish::Util :&compile, :&infix;
 use Method::Also;
 
 method TOP($/) {
@@ -75,9 +75,16 @@ method term:sym<var>($/) {
     make $<var>.ast;
 }
 
+method term:sym<infix=>($/) {
+    my $op = ~$<OPER>;
+    my $left = $<var>.ast;
+    my $right = $<EXPR>.&compile;
+    make $op.&infix($left, $right);
+}
+
 method term:sym<circumfix>($/) { make $<circumfix>.ast }
 
-method ws($/) is also<ww hs decint escale separator hexdigits xdigit before assign-op> {}
+method ws($/) is also<ww hs decint escale separator hexdigits xdigit before assign-op comment:sym<line>> {}
 
 method FALLBACK($method, $/) {
     die "Missing $method actions method"

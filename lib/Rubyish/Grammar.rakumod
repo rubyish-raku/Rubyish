@@ -54,6 +54,7 @@ token var {
     ]
 }
 
+token term:sym<infix=> {<var> <OPER=infix> '=' <EXPR> }
 token term:sym<var> { <var> }
 token term:sym<value> { <value> }
 token term:sym<circumfix> {:s <circumfix> }

@@ -11,13 +11,14 @@ multi sub infix('=', $name, $initial-value) {
     %*SYM{$id} = 'var';
     $sym.declared = True;
     my RakuAST::Initializer::Assign $initializer .= new($initial-value);
+    $initializer .= new(RakuAST::VarDeclaration::Anonymous.new(:sigil<$>, :$initializer));
  
     RakuAST::VarDeclaration::Term.new(
         :$name, :$initializer,
     );
 }
 
-multi sub infix($op, $left, $right) {
+multi sub infix($op, $left, $right) is export(:infix) {
     my RakuAST::Infix $infix .= new($op);
     RakuAST::ApplyInfix.new(
         :$left, :$infix, :$right
