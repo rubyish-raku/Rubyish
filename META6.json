@@ -15,7 +15,8 @@
   "provides": {
       "Rubyish::Grammar": "lib/Rubyish/Grammar.rakumod",
       "Rubyish::Actions": "lib/Rubyish/Actions.rakumod",
-      "Rubyish::Value": "lib/Rubyish/Value.rakumod",
+      "Rubyish::Operators": "lib/Rubyish/Operators.rakumod",
+      "Rubyish::Values": "lib/Rubyish/Values.rakumod",
       "Rubyish::HLL::Block": "lib/Rubyish/HLL/Block.rakumod",
       "Rubyish::HLL::Symbol": "lib/Rubyish/HLL/Symbol.rakumod",
       "Rubyish::Util": "lib/Rubyish/Util.rakumod"

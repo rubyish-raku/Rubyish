@@ -2,8 +2,6 @@ unit module Rubyish::Util;
 
 use experimental :rakuast;
 
-proto sub compile-expr(|) is export(:compile-expr) {*}
-
 multi sub infix('=', $name, $initial-value) {
     my $id = $name.DEPARSE;
     nextsame if %*SYM{$id}:exists;
@@ -58,3 +56,8 @@ multi sub compile-expr(% (:postfix($op)!, :operand($node)!)) {
 }
 
 multi sub compile-expr($leaf-node) { $leaf-node }
+
+sub compile($/) is export(:compile) {
+    $/.ast.head.&compile-expr;
+}
+

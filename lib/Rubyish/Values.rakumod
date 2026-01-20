@@ -1,4 +1,4 @@
-unit module Rubyish::Value;
+unit module Rubyish::Values;
 
 role Grammar {
     proto token value { * }

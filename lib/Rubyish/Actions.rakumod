@@ -5,14 +5,17 @@ use experimental :rakuast;
 use HLL::Expression::Grammar::Actions;
 also does HLL::Expression::Grammar::Actions;
 
-use       Rubyish::Value;
-also does Rubyish::Value::Actions;
+use       Rubyish::Operators;
+also does Rubyish::Operators::Actions;
 
-use Rubyish::Util :&compile-expr;
+use       Rubyish::Values;
+also does Rubyish::Values::Actions;
+
+use Rubyish::Util :&compile;
 use Method::Also;
 
 method TOP($/) {
-    make $/.&compile;
+    make $<stmtlist>.&compile;
 }
 
 method stmtlist($/) {
@@ -32,7 +35,7 @@ method modifier($/) {
 
 multi method stmtish($/ where $<modifier>) {
     my $expression = $<stmt>.ast;
-    my $mod-expr = $/.&compile;
+    my $mod-expr = $<EXPR>.&compile;
     given $<modifier>.ast {
         make RakuAST::Statement::Expression.new(
             :$expression,
@@ -60,7 +63,7 @@ method var($/) {
 }
 
 method stmt:sym<EXPR>($/) {
-    make $/.&compile;
+    make $<EXPR>.&compile;
 }
 
 method term:sym<value>($/) {
@@ -72,17 +75,7 @@ method term:sym<var>($/) {
     make $<var>.ast;
 }
 
-method circumfix:sym<( )>($/) {  make $/.&compile; }
 method term:sym<circumfix>($/) { make $<circumfix>.ast }
-
-multi sub compile($/ where $<EXPR>) {
-    my $expr-ast := $<EXPR>.ast.head;
-    $expr-ast.&compile-expr;
-}
-
-multi sub compile($/ where $<stmtlist>) {
-    $<stmtlist>.ast;
-}
 
 method ws($/) is also<ww hs decint escale separator hexdigits xdigit before assign-op> {}
 
