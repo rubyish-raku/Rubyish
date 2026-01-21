@@ -13,6 +13,7 @@
     "name": "Rubyish",
   "raku": "6.d",
   "provides": {
+      "Rubyish": "lib/Rubyish.rakumod",
       "Rubyish::Grammar": "lib/Rubyish/Grammar.rakumod",
       "Rubyish::Actions": "lib/Rubyish/Actions.rakumod",
       "Rubyish::Operators": "lib/Rubyish/Operators.rakumod",

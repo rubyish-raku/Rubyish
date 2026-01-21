@@ -47,10 +47,10 @@ sub is-variable($op) {
     $type ~~ 'var';
 }
 token var {
-    $<var>=[<!keyword> <ident> <!before [ \! | \? | <hs>\( ]>]
+    ['\\'|<!keyword>]$<var>=[<ident> <!before [ \! | \? | <hs>\( ]>]
     [  <?before <hs> <.assign-op> >
        || <?{ is-variable(~$<var>) }>
-       ||  <.panic("unknown variable or method: $<var>")>
+       || <.panic("unknown variable or method: $<var>")>
     ]
 }
 

@@ -11,6 +11,7 @@ multi sub infix('=', $name, $initial-value) {
     %*SYM{$id} = 'var';
     $sym.declared = True;
     my RakuAST::Initializer::Assign $initializer .= new($initial-value);
+    # wrap it in an anonymous declaration to get a rw container
     $initializer .= new(RakuAST::VarDeclaration::Anonymous.new(:sigil<$>, :$initializer));
  
     RakuAST::VarDeclaration::Term.new(

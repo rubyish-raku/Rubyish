@@ -2,14 +2,12 @@ use Test;
 
 use experimental :rakuast;
 
-use Rubyish::Grammar;
-use Rubyish::Actions;
+use Rubyish;
 
-sub test-eval(Str:D $expr, Any $expected-result) {
+sub test-eval(Str:D $code, Any $expected-result) {
     my Rubyish::Actions $actions .= new;
-    subtest $expr, {
-        ok Rubyish::Grammar.parse($expr, :$actions), "parse";
-        my RakuAST::StatementList $stmts = $/.ast;
+    subtest $code, {
+        my RakuAST::StatementList $stmts = Rubyish.compile: $code;
         is-deeply $stmts.EVAL, $expected-result, "statement eval";
     }
 }
@@ -72,7 +70,7 @@ subtest "string comparison", {
 
 subtest "variables", {
     for ("x=42" => 42, "x=42;x" => 42, "x=40;x+2" => 42, "x=40;x=42" => 42,
-         "x=40;x=x+2;x" => 42, "x=40;x+=2" => 42) {
+         "x=40;x=x+2;x" => 42, "x=40;x+=2" => 42, "\\if=40;\\if+2" => 42) {
         .key.&test-eval: .value;
     }
 }
