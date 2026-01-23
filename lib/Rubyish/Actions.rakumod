@@ -84,7 +84,7 @@ method term:sym<infix=>($/) {
 
 method term:sym<circumfix>($/) { make $<circumfix>.ast }
 
-method ws($/) is also<ww hs decint escale separator hexdigits xdigit before assign-op comment:sym<line> keyword> {}
+method ws($/) is also<ww hs decint escale separator hexdigits xdigit before assign-op comment:sym<line> keyword comma> {}
 
 method FALLBACK($method, $/) {
     die "Missing $method actions method"

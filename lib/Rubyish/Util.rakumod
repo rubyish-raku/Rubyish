@@ -41,16 +41,33 @@ multi sub compile-expr(% (:ternary($)!, :$left!, :$mid!, :$right!)) {
     )
 }
 
-multi sub compile-expr(% (:prefix($op)!, :operand($node)!)) {
-    my $operand = $node.&compile-expr;
+multi sub postfix('[]', $index) {
+    RakuAST::Postcircumfix::ArrayIndex.new: :$index;
+}
+
+multi sub compile-expr(% (:postfix($op)!, :$operand! is copy, :$expression! is copy)) {
+    $operand  .= &compile-expr;
+    $expression .= &compile-expr;
+    my RakuAST::SemiList $index .= new(
+        RakuAST::Statement::Expression.new(:$expression)
+    );
+    my $postfix = $op.&postfix($index);
+    RakuAST::ApplyPostfix.new(
+        :$postfix, :$operand,
+    )
+
+}
+
+multi sub compile-expr(% (:prefix($op)!, :$operand! is copy)) {
+    $operand .= &compile-expr;
     my RakuAST::Prefix $prefix .= new($op);
     RakuAST::ApplyPrefix.new(
         :$prefix, :$operand
     )
 }
 
-multi sub compile-expr(% (:postfix($op)!, :operand($node)!)) {
-    my $operand = $node.&compile-expr;
+multi sub compile-expr(% (:postfix($op)!, :$operand! is copy)) {
+    $operand .= &compile-expr;
     my RakuAST::Postfix $postfix .= new($op);
     RakuAST::ApplyPostfix.new(
         :$postfix, :$operand,

@@ -75,4 +75,10 @@ subtest "variables", {
     }
 }
 
+subtest "arrays", {
+    for ("[10,20]" => (10,20), "x=10;[x, 19+1]" => (10,20), '[10,20,30][1]' => 20) {
+        .key.&test-eval: .value;
+    }
+}
+
 done-testing();

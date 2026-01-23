@@ -11,12 +11,19 @@ role Grammar {
     token hexdigits {
         [ \d | <[ a..f A..F ａ..ｆ Ａ..Ｆ ]> ]+ % '_'
     }
+
+    token escale { <[Ee]> <[+-]>? <.decint> }
     token decimal-num {
         [ <int=.decint> '.' <frac=.decint> ] <.escale>?
         | [ <int=.decint> ] <.escale>
     }
 
-    token escale { <[Ee]> <[+-]>? <.decint> }
+    token value:sym<list>   {'[' ~ ']' <paren-list> }
+    token paren-list {
+         :my $*IN_PARENS := 1;
+         <EXPR> *% <.comma>
+    }
+    rule comma { [','|'=>'] }
 
     token value:sym<nil>     { <sym> }
     token value:sym<true>    { <sym> }
@@ -42,6 +49,8 @@ role Grammar {
 
 role Actions {
     use experimental :rakuast;
+    use Rubyish::Util :&compile;
+
     multi sub literal(Int:D $v) { RakuAST::IntLiteral.new($v) }
     multi sub literal(Rat:D $v) { RakuAST::RatLiteral.new($v) }
     multi sub literal(Num:D $v) { RakuAST::NumLiteral.new($v) }
@@ -57,6 +66,17 @@ role Actions {
         make RakuAST::Type::Simple.new(
             RakuAST::Name.from-identifier("Nil")
         )
+    }
+    method value:sym<list>($/) {
+        my @operands = $<paren-list>.ast;
+        my RakuAST::Infix $infix .= new(',');
+        make RakuAST::ApplyListInfix.new(
+            :@operands,
+            :$infix,
+        );
+    }
+    method paren-list($/) {
+        make @<EXPR>.map: &compile;
     }
     method value:sym<true>($/) {
         make RakuAST::Term::Enum.from-identifier('True');

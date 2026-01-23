@@ -10,6 +10,6 @@ multi method compile(Str:D $code, Str:D :$rule = 'TOP') {
     .ast given $.grammar.parse($code, :$.actions, :$rule);
 }
 
-method exec(Str:D $code, |%o) {
+method eval(Str:D $code, *%o) {
     $.compile($code, |%o).EVAL;
 }

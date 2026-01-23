@@ -110,11 +110,22 @@ role Grammar {
     }
 
     # Array and hash indices
-    token postcircumfix:sym<[ ]> { '[' ~ ']' [ <EXPR> ] <O(|%methodop)> }
-    token postcircumfix:sym<{ }> { '{' ~ '}' [ <EXPR> ] <O(|%methodop)> }
+    token postcircumfix:sym<[ ]> { '[' ~ ']' [ <EXPR> ] <O(|%methodop, :op<[]>)> }
+    token postcircumfix:sym<{ }> { '{' ~ '}' [ <EXPR> ] <O(|%methodop, :op<{}>)> }
 }
 
 role Actions {
+    use experimental :rakuast;
     use Rubyish::Util :&compile;
+    
     method circumfix:sym<( )>($/) {  make $<EXPR>.&compile; }
+    method postcircumfix:sym<[ ]>($/) {
+        my $expression = $<EXPR>.&compile;
+        my RakuAST::SemiList $index .= new(
+            RakuAST::Statement::Expression.new(
+                :$expression
+            )
+        );
+        make RakuAST::Postcircumfix::ArrayIndex.new(:$index);
+    }
 }
