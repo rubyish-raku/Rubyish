@@ -119,13 +119,4 @@ role Actions {
     use Rubyish::Util :&compile;
     
     method circumfix:sym<( )>($/) {  make $<EXPR>.&compile; }
-    method postcircumfix:sym<[ ]>($/) {
-        my $expression = $<EXPR>.&compile;
-        my RakuAST::SemiList $index .= new(
-            RakuAST::Statement::Expression.new(
-                :$expression
-            )
-        );
-        make RakuAST::Postcircumfix::ArrayIndex.new(:$index);
-    }
 }
