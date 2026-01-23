@@ -26,36 +26,24 @@ multi sub infix($op, $left, $right) is export(:infix) {
     )
 }
 
-multi sub compile-expr(% (:infix($op)!, :$left! is copy, :$right! is copy)) {
-    $left  .= &compile-expr;
-    $right .= &compile-expr;
-    $op.&infix: $left, $right;
-}
-
-multi sub compile-expr(% (:ternary($)!, :$left!, :$mid!, :$right!)) {
+# ternary
+multi sub compile-expr(% (:infix($)!, :$left!, :$expr!, :$right!)) {
     my $condition = $left.&compile-expr;
-    my $then = $mid.&compile-expr;
+    my $then = $expr.&compile-expr;
     my $else = $right.&compile-expr;
     RakuAST::Ternary.new(
         :$condition, :$then, :$else
     )
 }
 
-multi sub postfix('[]', $index) {
-    RakuAST::Postcircumfix::ArrayIndex.new: :$index;
+multi sub compile-expr(% (:infix($op)!, :$left! is copy, :$right! is copy)) {
+    $left  .= &compile-expr;
+    $right .= &compile-expr;
+    $op.&infix: $left, $right;
 }
 
-multi sub compile-expr(% (:postfix($op)!, :$operand! is copy, :$expression! is copy)) {
-    $operand  .= &compile-expr;
-    $expression .= &compile-expr;
-    my RakuAST::SemiList $index .= new(
-        RakuAST::Statement::Expression.new(:$expression)
-    );
-    my $postfix = $op.&postfix($index);
-    RakuAST::ApplyPostfix.new(
-        :$postfix, :$operand,
-    )
-
+multi sub postfix('[]', $index) {
+    RakuAST::Postcircumfix::ArrayIndex.new: :$index;
 }
 
 multi sub compile-expr(% (:prefix($op)!, :$operand! is copy)) {
@@ -64,6 +52,20 @@ multi sub compile-expr(% (:prefix($op)!, :$operand! is copy)) {
     RakuAST::ApplyPrefix.new(
         :$prefix, :$operand
     )
+}
+
+# postcircumfix
+multi sub compile-expr(% (:postfix($op)!, :$operand! is copy, :$expr!)) {
+    $operand  .= &compile-expr;
+    my $expression = $expr.&compile-expr;
+    my RakuAST::SemiList $index .= new(
+        RakuAST::Statement::Expression.new(:$expression)
+    );
+    my $postfix = $op.&postfix($index);
+    RakuAST::ApplyPostfix.new(
+        :$postfix, :$operand,
+    )
+
 }
 
 multi sub compile-expr(% (:postfix($op)!, :$operand! is copy)) {
