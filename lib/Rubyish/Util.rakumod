@@ -46,6 +46,10 @@ multi sub postfix('[]', $index) {
     RakuAST::Postcircumfix::ArrayIndex.new: :$index;
 }
 
+multi sub postfix('{}', $index) {
+    RakuAST::Postcircumfix::HashIndex.new: :$index;
+}
+
 multi sub compile-expr(% (:prefix($op)!, :$operand! is copy)) {
     $operand .= &compile-expr;
     my RakuAST::Prefix $prefix .= new($op);

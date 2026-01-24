@@ -18,7 +18,8 @@ role Grammar {
         | [ <int=.decint> ] <.escale>
     }
 
-    token value:sym<list>   {'[' ~ ']' <paren-list> }
+    token value:sym<array>  {'[' ~ ']' <paren-list> }
+    token value:sym<hash>   {'{' ~ '}' <paren-list> }
     token paren-list {
          :my $*IN_PARENS := 1;
          <EXPR> *% <.comma>
@@ -65,18 +66,31 @@ role Actions {
     method value:sym<nil>($/) {
         make RakuAST::Type::Simple.new(
             RakuAST::Name.from-identifier("Nil")
-        )
+        );
     }
-    method value:sym<list>($/) {
-        my @operands = $<paren-list>.ast;
+    method value:sym<array>($/) {
+        my $expression = $<paren-list>.ast;
+        make RakuAST::Circumfix::ArrayComposer.new(
+            RakuAST::SemiList.new(
+                RakuAST::Statement::Expression.new(:$expression)
+            )
+        );
+    }
+    method value:sym<hash>($/) {
+        my $expression = $<paren-list>.ast;
+        make RakuAST::Contextualizer::Hash.new(
+            RakuAST::StatementSequence.new(
+                RakuAST::Statement::Expression.new(:$expression)
+            )
+        );
+    }
+    method paren-list($/) {
+        my @operands = @<EXPR>.map: &compile;
         my RakuAST::Infix $infix .= new(',');
         make RakuAST::ApplyListInfix.new(
             :@operands,
             :$infix,
         );
-    }
-    method paren-list($/) {
-        make @<EXPR>.map: &compile;
     }
     method value:sym<true>($/) {
         make RakuAST::Term::Enum.from-identifier('True');
